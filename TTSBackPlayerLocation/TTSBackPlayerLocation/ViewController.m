@@ -1,20 +1,9 @@
-# TTSBackPlayerLocation
-
-
-### 需求分析
-1、APP进入后台，防止被杀死，保持socket链接；
-2、socket接收到消息，通过TTS播报处理；
-
-### 实现计划
-1、APP进入后台，发起定位，不终止；
-2、当接收到socket消息时，TTS播报socket消息；
-
-### 具体实现
-#### 1、项目设置
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20210204132345121.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3RpYW56aGlsYW4w,size_16,color_FFFFFF,t_70)
-#### 2、代码实现
-
-```objectivec
+//
+//  ViewController.m
+//  TTSBackPlayerLocation
+//
+//  Created by 李闯 on 2021/2/4.
+//
 
 #import "ViewController.h"
 #import <AVFoundation/AVFoundation.h>
@@ -82,6 +71,36 @@
     //开启后台处理多媒体事件
     [[UIApplication sharedApplication] beginReceivingRemoteControlEvents];
     [self keepBackgroundTask];
+}
+
+#pragma mark - 申请30秒
+- (UIBackgroundTaskIdentifier)backgroundPlayerID:(UIBackgroundTaskIdentifier)backTaskId
+{
+    NSError *error = nil;
+    // 设置并激活音频会话类别
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    
+    [session setActive:YES error:nil];
+    if(error) {
+        NSLog(@"ListenPlayView background error3: %@", error.description);
+    }
+    [session setCategory:AVAudioSessionCategoryPlayback error:nil];
+    if(error) {
+        NSLog(@"ListenPlayView background error2: %@", error.description);
+    }
+    // 允许应用程序接收远程控制
+    [[UIApplication sharedApplication] beginReceivingRemoteControlEvents];
+
+    // 设置后台任务ID
+    UIBackgroundTaskIdentifier newTaskId = UIBackgroundTaskInvalid;
+    
+    newTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:nil];
+    
+    if(newTaskId != UIBackgroundTaskInvalid && backTaskId != UIBackgroundTaskInvalid) {
+        [[UIApplication sharedApplication] endBackgroundTask:backTaskId];
+    }
+
+    return newTaskId;
 }
 
 #pragma mark - 进入前台通知
@@ -171,9 +190,3 @@
 
 
 @end
-
-```
-
-demo地址：[https://blog.csdn.net/tianzhilan0/article/details/113635131](https://blog.csdn.net/tianzhilan0/article/details/113635131)
-
-
